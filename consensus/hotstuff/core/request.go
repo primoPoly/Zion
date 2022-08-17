@@ -62,7 +62,7 @@ func (c *core) handleRequest(req *hotstuff.Request) error {
 		return nil
 	}
 	if c.current.highQC == nil {
-		logger.Trace("Failed to process request", "err",  "current highQC is nil")
+		logger.Trace("Failed to process request", "err", "current highQC is nil")
 		return nil
 	}
 
@@ -74,7 +74,7 @@ func (c *core) handleRequest(req *hotstuff.Request) error {
 	}
 
 	c.sendPrepare()
-	logger.Trace("handleRequest", "height", req.Proposal.Number(), "proposal", req.Proposal.Hash())
+	logger.TraceT("handleRequest", "height", req.Proposal.Number(), "proposal", req.Proposal.Hash())
 	return nil
 }
 

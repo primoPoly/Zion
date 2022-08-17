@@ -57,8 +57,6 @@ func (c *core) handlePrepareVote(data *hotstuff.Message, src hotstuff.Validator)
 		logger.Trace("Failed to check vote", "msg", msgTyp, "expect", src.Address().Hex(), "got", addr.Hex())
 	}
 
-	logger.Trace("handlePrepareVote", "msg", msgTyp, "src", src.Address(), "hash", vote.Digest)
-
 	if size := c.current.PrepareVoteSize(); size >= c.Q() && c.currentState() < StatePrepared {
 		seals := c.getMessageSeals(size)
 		newProposal, err := c.backend.PreCommit(c.current.Proposal(), seals)
@@ -73,6 +71,7 @@ func (c *core) handlePrepareVote(data *hotstuff.Message, src hotstuff.Validator)
 
 		c.sendPreCommit()
 	}
+	logger.TraceT("handlePrepareVote", "msg", msgTyp, "src", src.Address(), "hash", vote.Digest)
 
 	return nil
 }
@@ -92,7 +91,7 @@ func (c *core) sendPreCommit() {
 		return
 	}
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendPreCommit", "msg view", msg.View, "proposal", msg.Proposal.Hash())
+	logger.TraceT("sendPreCommit", "msg view", msg.View, "proposal", msg.Proposal.Hash())
 }
 
 func (c *core) handlePreCommit(data *hotstuff.Message, src hotstuff.Validator) error {
@@ -127,8 +126,6 @@ func (c *core) handlePreCommit(data *hotstuff.Message, src hotstuff.Validator) e
 		return err
 	}
 
-	logger.Trace("handlePreCommit", "msg", msgTyp, "src", src.Address(), "hash", msg.Proposal.Hash())
-
 	if c.IsProposer() && c.currentState() < StatePreCommitted {
 		c.sendPreCommitVote()
 	}
@@ -138,6 +135,8 @@ func (c *core) handlePreCommit(data *hotstuff.Message, src hotstuff.Validator) e
 
 		c.sendPreCommitVote()
 	}
+
+	logger.TraceT("handlePreCommit", "msg", msgTyp, "src", src.Address(), "hash", msg.Proposal.Hash())
 
 	return nil
 }
@@ -163,5 +162,5 @@ func (c *core) sendPreCommitVote() {
 		return
 	}
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendPreCommitVote", "vote view", vote.View, "vote", vote.Digest)
+	logger.TraceT("sendPreCommitVote", "vote view", vote.View, "vote", vote.Digest)
 }

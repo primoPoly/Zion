@@ -46,7 +46,7 @@ func (c *core) sendNewView(view *hotstuff.View) {
 		Msg:  payload,
 	})
 
-	logger.Trace("sendNewView", "prepareQC", prepareQC.Hash)
+	logger.TraceT("sendNewView", "prepareQC", prepareQC.Hash)
 }
 
 func (c *core) handleNewView(data *hotstuff.Message, src hotstuff.Validator) error {
@@ -80,8 +80,6 @@ func (c *core) handleNewView(data *hotstuff.Message, src hotstuff.Validator) err
 		return errAddNewViews
 	}
 
-	logger.Trace("handleNewView", "msg", msgTyp, "src", src.Address(), "prepareQC", msg.PrepareQC.Hash)
-
 	if size := c.current.NewViewSize(); size >= c.Q() && c.currentState() < StateHighQC {
 		highQC := c.getHighQC()
 		c.current.SetHighQC(highQC)
@@ -90,6 +88,7 @@ func (c *core) handleNewView(data *hotstuff.Message, src hotstuff.Validator) err
 		logger.Trace("acceptHighQC", "msg", msgTyp, "src", src.Address(), "prepareQC", msg.PrepareQC.Hash, "msgSize", size)
 		c.sendRequest()
 	}
+	logger.TraceT("handleNewView", "msg", msgTyp, "src", src.Address(), "prepareQC", msg.PrepareQC.Hash)
 
 	return nil
 }

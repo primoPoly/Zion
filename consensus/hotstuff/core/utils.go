@@ -20,8 +20,10 @@ package core
 
 import (
 	"fmt"
+	"github.com/ethereum/go-ethereum/metrics"
 	"math/big"
 	"reflect"
+	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus/hotstuff"
@@ -254,9 +256,12 @@ func (c *core) preExecuteBlock(proposal hotstuff.Proposal) error {
 	return c.backend.ValidateBlock(block)
 }
 
-func (c *core) newLogger() log.Logger {
+func (c *core) newLogger() *wrapperLogger {
 	logger := c.logger.New("state", c.currentState(), "view", c.currentView())
-	return logger
+	return &wrapperLogger{
+		logger:    logger,
+		startTime: time.Now(),
+	}
 }
 
 func (c *core) Q() int {
@@ -275,4 +280,54 @@ func proposal2QC(proposal hotstuff.Proposal, round *big.Int) *hotstuff.QuorumCer
 	qc.Proposer = h.Coinbase
 	qc.Extra = h.Extra
 	return qc
+}
+
+type wrapperLogger struct {
+	logger    log.Logger
+	startTime time.Time
+}
+
+func (w *wrapperLogger) New(ctx ...interface{}) log.Logger {
+	logger := w.logger.New(ctx)
+	return &wrapperLogger{
+		logger:    logger,
+		startTime: time.Now(),
+	}
+}
+
+func (w *wrapperLogger) GetHandler() log.Handler {
+	return w.logger.GetHandler()
+}
+
+func (w *wrapperLogger) SetHandler(h log.Handler) {
+	w.logger.SetHandler(h)
+}
+
+func (w *wrapperLogger) Trace(msg string, ctx ...interface{}) {
+	w.logger.Trace(msg, ctx)
+}
+
+func (w *wrapperLogger) TraceT(msg string, ctx ...interface{}) {
+	metrics.GetOrRegisterTimer(msg, nil).UpdateSince(w.startTime)
+	w.logger.Trace(msg, ctx)
+}
+
+func (w *wrapperLogger) Debug(msg string, ctx ...interface{}) {
+	w.logger.Debug(msg, ctx)
+}
+
+func (w *wrapperLogger) Info(msg string, ctx ...interface{}) {
+	w.logger.Info(msg, ctx)
+}
+
+func (w *wrapperLogger) Warn(msg string, ctx ...interface{}) {
+	w.logger.Warn(msg, ctx)
+}
+
+func (w *wrapperLogger) Error(msg string, ctx ...interface{}) {
+	w.logger.Error(msg, ctx)
+}
+
+func (w *wrapperLogger) Crit(msg string, ctx ...interface{}) {
+	w.logger.Crit(msg, ctx)
 }

@@ -57,8 +57,6 @@ func (c *core) handleCommitVote(data *hotstuff.Message, src hotstuff.Validator) 
 		return errAddPreCommitVote
 	}
 
-	logger.Trace("handleCommitVote", "msg", msgTyp, "src", src.Address(), "hash", vote.Digest)
-
 	if size := c.current.CommitVoteSize(); size >= c.Q() && c.currentState() < StateCommitted {
 		c.current.SetState(StateCommitted)
 		c.current.SetCommittedQC(c.current.PreCommittedQC())
@@ -66,6 +64,7 @@ func (c *core) handleCommitVote(data *hotstuff.Message, src hotstuff.Validator) 
 
 		c.sendDecide()
 	}
+	logger.TraceT("handleCommitVote", "msg", msgTyp, "src", src.Address(), "hash", vote.Digest)
 
 	return nil
 }
@@ -81,7 +80,7 @@ func (c *core) sendDecide() {
 		return
 	}
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendDecide", "msg view", sub.View, "proposal", sub.Hash)
+	logger.TraceT("sendDecide", "msg view", sub.View, "proposal", sub.Hash)
 }
 
 func (c *core) handleDecide(data *hotstuff.Message, src hotstuff.Validator) error {
@@ -112,8 +111,6 @@ func (c *core) handleDecide(data *hotstuff.Message, src hotstuff.Validator) erro
 		return err
 	}
 
-	logger.Trace("handleDecide", "msg", msgTyp, "address", src.Address(), "msg view", msg.View, "proposal", msg.Hash)
-
 	if c.IsProposer() && c.currentState() == StateCommitted {
 		if err := c.backend.Commit(c.current.Proposal()); err != nil {
 			logger.Trace("Failed to commit proposal", "err", err)
@@ -131,6 +128,7 @@ func (c *core) handleDecide(data *hotstuff.Message, src hotstuff.Validator) erro
 	}
 
 	c.startNewRound(common.Big0)
+	logger.TraceT("handleDecide", "msg", msgTyp, "address", src.Address(), "msg view", msg.View, "proposal", msg.Hash)
 	return nil
 }
 
