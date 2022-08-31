@@ -73,7 +73,7 @@ func (c *core) sendPrepare() {
 	logger.Trace("delay to broadcast proposal", "time", delay.Milliseconds())
 
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendPrepare", "prepare view", prepare.View, "proposal", prepare.Proposal.Hash())
+	logger.TraceT("sendPrepare", "prepare view", prepare.View, "proposal", prepare.Proposal.Hash())
 }
 
 func (c *core) handlePrepare(data *hotstuff.Message, src hotstuff.Validator) error {
@@ -117,8 +117,6 @@ func (c *core) handlePrepare(data *hotstuff.Message, src hotstuff.Validator) err
 		return err
 	}
 
-	logger.Trace("handlePrepare", "msg", msgTyp, "src", src.Address(), "hash", msg.Proposal.Hash())
-
 	if c.IsProposer() && c.currentState() < StatePrepared {
 		c.sendPrepareVote()
 	}
@@ -131,6 +129,7 @@ func (c *core) handlePrepare(data *hotstuff.Message, src hotstuff.Validator) err
 		c.sendPrepareVote()
 	}
 
+	logger.TraceT("handlePrepare", "msg", msgTyp, "src", src.Address(), "hash", msg.Proposal.Hash())
 	return nil
 }
 
@@ -149,7 +148,7 @@ func (c *core) sendPrepareVote() {
 		return
 	}
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendPrepareVote", "vote view", vote.View, "vote", vote.Digest)
+	logger.TraceT("sendPrepareVote", "vote view", vote.View, "vote", vote.Digest)
 }
 
 func (c *core) createNewProposal() (hotstuff.Proposal, error) {

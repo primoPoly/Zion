@@ -47,7 +47,7 @@ func (c *core) handleRequest(req *hotstuff.Request) error {
 		c.sendPrepare()
 	}
 
-	logger.Trace("handleRequest", "height", req.Proposal.Number(), "proposal", req.Proposal.Hash())
+	logger.TraceT("handleRequest", "height", req.Proposal.Number(), "proposal", req.Proposal.Hash())
 	return nil
 }
 

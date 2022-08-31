@@ -57,8 +57,6 @@ func (c *core) handleCommitVote(data *hotstuff.Message, src hotstuff.Validator) 
 		return errAddPreCommitVote
 	}
 
-	logger.Trace("handleCommitVote", "msg", msgTyp, "src", src.Address(), "hash", vote.Digest)
-
 	if size := c.current.CommitVoteSize(); size >= c.Q() && c.currentState() < StateCommitted {
 		c.current.SetState(StateCommitted)
 		c.current.SetCommittedQC(c.current.PreCommittedQC())
@@ -69,6 +67,7 @@ func (c *core) handleCommitVote(data *hotstuff.Message, src hotstuff.Validator) 
 		}
 		c.startNewRound(common.Big0)
 	}
+	logger.TraceT("handleCommitVote", "msg", msgTyp, "src", src.Address(), "hash", vote.Digest)
 
 	return nil
 }

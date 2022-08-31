@@ -56,13 +56,12 @@ func (c *core) handlePreCommitVote(data *hotstuff.Message, src hotstuff.Validato
 		return errAddPreCommitVote
 	}
 
-	logger.Trace("handlePreCommitVote", "src", src.Address(), "hash", vote.Digest)
-
 	if size := c.current.PreCommitVoteSize(); size >= c.Q() && c.currentState() < StatePreCommitted {
 		c.lockQCAndProposal(c.current.PrepareQC())
 		logger.Trace("acceptPreCommitted", "msg", msgTyp, "src", src.Address(), "hash", c.current.PreCommittedQC().Hash, "msgSize", size)
 		c.sendCommit()
 	}
+	logger.TraceT("handlePreCommitVote", "src", src.Address(), "hash", vote.Digest)
 	return nil
 }
 
@@ -77,7 +76,7 @@ func (c *core) sendCommit() {
 		return
 	}
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendCommit", "msg view", sub.View, "proposal", sub.Hash)
+	logger.TraceT("sendCommit", "msg view", sub.View, "proposal", sub.Hash)
 }
 
 func (c *core) handleCommit(data *hotstuff.Message, src hotstuff.Validator) error {
@@ -108,8 +107,6 @@ func (c *core) handleCommit(data *hotstuff.Message, src hotstuff.Validator) erro
 		return err
 	}
 
-	logger.Trace("handleCommit", "msg", msgTyp, "address", src.Address(), "msg view", msg.View, "proposal", msg.Hash)
-
 	if c.IsProposer() && c.currentState() < StateCommitted {
 		c.sendCommitVote()
 	}
@@ -118,6 +115,7 @@ func (c *core) handleCommit(data *hotstuff.Message, src hotstuff.Validator) erro
 		logger.Trace("acceptPreCommitted", "msg", msgTyp, "lockQC", c.current.PreCommittedQC().Hash)
 		c.sendCommitVote()
 	}
+	logger.TraceT("handleCommit", "msg", msgTyp, "address", src.Address(), "msg view", msg.View, "proposal", msg.Hash)
 	return nil
 }
 
@@ -142,10 +140,10 @@ func (c *core) sendCommitVote() {
 		return
 	}
 	c.broadcast(&hotstuff.Message{Code: msgTyp, Msg: payload})
-	logger.Trace("sendCommitVote", "vote view", vote.View, "vote", vote.Digest)
 
 	if !c.IsProposer() {
 		c.setCurrentState(StateCommitted)
 		c.startNewRound(common.Big0)
 	}
+	logger.TraceT("sendCommitVote", "vote view", vote.View, "vote", vote.Digest)
 }
